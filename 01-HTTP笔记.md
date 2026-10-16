@@ -18,9 +18,9 @@ Host: www.baidu.com
 
 ```
 
-- `GET / HTTP/1.0` 我的理解：
-- `Host: www.baidu.com` 我的理解：
-- 最后那个空行 我的理解：
+- `GET / HTTP/1.0` 我的理解：get是我要得到这个动作，/是要得到网页，后面是协议以及版本号
+- `Host: www.baidu.com` 我的理解：我要找百度的网站
+- 最后那个空行 我的理解：将信头与正文分隔开
 
 ---
 
@@ -30,7 +30,7 @@ Host: www.baidu.com
 
 ```
 
-我的理解：
+我的理解：发送了协议名称和版本号，以及同意这个信号200
 
 ---
 
@@ -39,10 +39,10 @@ Host: www.baidu.com
 | 响应头 | 大白话 |
 | --- | --- |
 | `Content-Type: text/html` | **示范**：回信的正文是一张网页，让浏览器按网页来显示 |
-| `Content-Length: 29506` |  |
-| `Server: BWS/1.1` |  |
-| `Set-Cookie: BAIDUID=...` |  |
-| `X-Xss-Protection: 1;mode=block` |  |
+| `Content-Length: 29506` | 回信总共有几个字节 |
+| `Server: BWS/1.1` | 用的是什么发给我的 |
+| `Set-Cookie: BAIDUID=...` | 给我的身份验证，下次请求用这个验证 |
+| `X-Xss-Protection: 1;mode=block` | 浏览器相关的安全开关 |
 
 > 拿不准就写「我猜……」——**猜错比空着强一百倍。**
 
@@ -50,9 +50,14 @@ Host: www.baidu.com
 
 ## 4. 我完全看不懂的（列出来就行，不用解释）
 
-1.
-2.
-3.
+1.Accept-Ranges: bytes
+Cache-Control: no-cache
+不知道这两行说的什么，
+2.不知道URL是什么，get这种方法有几个分别是什么
+3.Remote address
+117.161.76.36:443
+Referrer policy
+origin-when-cross-origin不知道这什么意思
 
 ---
 
