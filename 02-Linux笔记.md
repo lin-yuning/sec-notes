@@ -16,8 +16,8 @@
 | 5→6 | `cd inhere`、`find . -type f -size 1033c`、`cat ./maybehere07/.file2` | 进入目录；在当前目录下按「普通文件 + 正好 1033 字节」筛选；打印找到的文件 | 忘了 `ls` 默认不显示 `.` 开头的隐藏文件，把 `-` 开头的文件当成目标去读了 |
 | 6→7 | `find / -user bandit7 -group bandit6 -size 33c 2>/dev/null`、`cat /var/lib/dpkg/info/bandit7.password` | 从根目录搜全盘，同时按「所有者 + 所属组 + 大小」三个条件筛；`2>/dev/null` 把没权限的报错丢进黑洞 | 家目录里 `ls` 一片空白，`ls -a` 只有 `.bashrc` 这类系统启动文件；还想 `cd` 进文件，报 `Not a directory`。其实密码根本不在家目录 |
 | 7→8 | `grep millionth data.txt` | 按内容逐行筛选，只打印含 `millionth` 的那一行 | 没先读题目原文，直接敲了下一关的 `sort data.txt \| uniq -u`，输出一大堆——因为这一关的 `data.txt` 里几乎没有重复行 |
-| 8→9 | `sort data.txt \| uniq -u` | 先按字母序排序，再用管道把结果交给 `uniq -u`，只保留出现一次的行 | 第一次把 `sort` 和 `uniq` 分成两行敲，`uniq` 读的还是没排序的原文件；它只比较相邻行，于是几乎整份文件都被当成"唯一行" |
-| 9→10 | `strings data.txt \| grep "=="` | 从二进制文件里捞出可读的连续字符串，再按 `==` 过滤 | 这关没卡，一次就出来了 |
+| 8→9 | `sort data.txt \| uniq -u` | 先按字母序排序，再用管道把结果交给 `uniq -u`，只保留出现一次的行 | 第一次把 `sort` 和 `uniq` 分成两行敲，`uniq` 读的还是没排序的原文件；它只比较相邻行，于是几乎整份文件都被当成"唯一行"。后来又在 `uniq` 后面加了 `data.txt`，结果不对——**管道里 `uniq` 已经从左边拿到了输入，不该再给文件名** |
+| 9→10 | `strings data.txt \| grep "=="` | 从二进制文件里捞出可读的连续字符串，再按 `==` 过滤 | 一开始不清楚 `grep` 的原理和用法；还担心 `==` 要不要加引号（其实 `=` 不是 shell 的特殊字符，加不加都行） |
 
 ---
 
@@ -52,7 +52,7 @@ https://overthewire.org/wargames/bandit/bandit{下一关数字}.html
 | `cd` | 切换目录（只能进目录，不能进文件） | 4–6 |
 | `file` | 判断文件是文本还是二进制 | 4 |
 | `find` | 按名字/大小/所有者搜文件 | 5–6 |
-| `grep` | 按内容筛选行 | 7 |
+| `grep` | 按内容筛选行 | 7、9 |
 | `sort` / `uniq -u` | 排序 / 只留出现一次的行 | 8 |
 | `strings` | 从二进制里捞出可读文本 | 9 |
 | `2>/dev/null` | 把报错丢进黑洞 | 6 |
