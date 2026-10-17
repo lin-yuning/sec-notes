@@ -1,6 +1,6 @@
 # 02 · Linux 命令行（OverTheWire Bandit）
 
-> 蔺宇宁 · 2026-10-17 · 全程目标 0→15，今天打通 0→6
+> 蔺宇宁 · 2026-10-17 · 全程目标 0→15，今天打通 0→10
 
 ---
 
@@ -14,6 +14,10 @@
 | 3→4 | `ls`、`ls -a`、`cat ...Hiding-From-You` | 列出文件；`-a` 显示隐藏文件（`.` 是当前目录、`..` 是上级目录）；读取隐藏文件 | `ls` 出来是空的，愣了一下才想到文件被隐藏了，加 `-a` 才看见 |
 | 4→5 | `ls`、`cd inhere`、`file ./-*`、`cat ./-file07` | 列出文件；进入目录；逐个判断文件类型；打印文本文件内容（`./` 防止 `-` 开头被当选项） | 连着三次 `Permission denied`，随后 IP 被临时封了十几分钟；怀疑是复制时多带了空格，或把 `l` 和 `1` 认错 |
 | 5→6 | `cd inhere`、`find . -type f -size 1033c`、`cat ./maybehere07/.file2` | 进入目录；在当前目录下按「普通文件 + 正好 1033 字节」筛选；打印找到的文件 | 忘了 `ls` 默认不显示 `.` 开头的隐藏文件，把 `-` 开头的文件当成目标去读了 |
+| 6→7 | `find / -user bandit7 -group bandit6 -size 33c 2>/dev/null`、`cat /var/lib/dpkg/info/bandit7.password` | 从根目录搜全盘，同时按「所有者 + 所属组 + 大小」三个条件筛；`2>/dev/null` 把没权限的报错丢进黑洞 | 家目录里 `ls` 一片空白，`ls -a` 只有 `.bashrc` 这类系统启动文件；还想 `cd` 进文件，报 `Not a directory`。其实密码根本不在家目录 |
+| 7→8 | `grep millionth data.txt` | 按内容逐行筛选，只打印含 `millionth` 的那一行 | 没先读题目原文，直接敲了下一关的 `sort data.txt \| uniq -u`，输出一大堆——因为这一关的 `data.txt` 里几乎没有重复行 |
+| 8→9 | `sort data.txt \| uniq -u` | 先按字母序排序，再用管道把结果交给 `uniq -u`，只保留出现一次的行 | 第一次把 `sort` 和 `uniq` 分成两行敲，`uniq` 读的还是没排序的原文件；它只比较相邻行，于是几乎整份文件都被当成"唯一行" |
+| 9→10 | `strings data.txt \| grep "=="` | 从二进制文件里捞出可读的连续字符串，再按 `==` 过滤 | 这关没卡，一次就出来了 |
 
 ---
 
@@ -25,6 +29,20 @@
 
 ---
 
+## 一个要改的习惯
+
+之前我是"拿到命令就去敲"，没先读题目原文。今天在 bandit7 上手滑跑了下一关的 `sort | uniq -u`，输出一大堆才反应过来自己关卡搞错了。
+
+每关的题目有固定地址：
+
+```
+https://overthewire.org/wargames/bandit/bandit{下一关数字}.html
+```
+
+`Level Goal` 只给**条件**，命令要自己从条件推。页面底下还有一行 `Commands you may need`，列着这关该用哪几个命令——等于官方免费给的提示。
+
+---
+
 ## 下一步
 
-- Bandit 6→15：`find` 全盘搜、`grep`、`sort` / `uniq`、`strings`、`base64`、`tr`、`xxd`、SSH 私钥、`nc`
+- Bandit 10→15：`base64`、`tr`、`xxd` 解压链、SSH 私钥、`nc`
