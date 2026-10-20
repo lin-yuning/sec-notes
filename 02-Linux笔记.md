@@ -1,6 +1,6 @@
 # 02 · Linux 命令行（OverTheWire Bandit）
 
-> 蔺宇宁 · 2026-10-17 起 · 全程目标 0→15
+> 蔺宇宁 · 2026-10-17 起 · 全程目标 0→15（已完成）
 
 ---
 
@@ -68,33 +68,33 @@
 
 ### 10→11
 
-- **命令**：
-- **在干什么**：
-- **我卡在哪**：
+- **命令**：`base64 -d data.txt`
+- **在干什么**：把 base64 编码过的文本还原成原始二进制。base64 编码本身的意义是让二进制能穿过“只收文本”的通道（邮件、JSON、配置文件），`-d` 是反向还原
+- **我卡在哪**：不知道命令格式，第一次没加 `-d`；后来想查版本，敲了 `v` / `-v` 都不对——短选项是**单**减号加一个字母（`-d`），长选项是**双**减号加单词（`--version`）。单独的 `v` 不带减号会被当成文件名，报 No such file or directory
 
 ### 11→12
 
-- **命令**：
-- **在干什么**：
-- **我卡在哪**：
+- **命令**：`cat data.txt | tr 'A-Za-z' 'N-ZA-Mn-za-m'`
+- **在干什么**：用 `tr` 做字符替换——集合 1 的第 1 个字符换成集合 2 的第 1 个，依次一一对应。把两个集合排成“错开 13 位”的样子，就等价于 ROT13（凯撒移位的一种）。`tr` 本身并不懂凯撒，换个排法就能做别的替换
+- **我卡在哪**：① 不知道 `tr` 的格式，在两个集合的单引号中间多打了空格，替换表整体错位，输出全乱；② 用 `echo data.txt` 当输入，传进去的只是 `data.txt` 这几个字，不是文件内容——该用 `cat data.txt`，或者 `tr ... < data.txt`
 
 ### 12→13
 
-- **命令**：
-- **在干什么**：
-- **我卡在哪**：
+- **命令**：`xxd -r data.txt data1`（第 0 层特例）→ `file data1` → 之后每层都先 `file`，再按输出选：gzip 用 `mv f f.gz && gzip -d f.gz`，bzip2 用 `mv f f.bz2 && bzip2 -d f.bz2`，tar 用 `tar -xf f`，直到 `file` 说 `ASCII text` 再 `cat`
+- **在干什么**：把一层层压缩包逐层剥开。`xxd -r` 先把十六进制转储还原成二进制（第 0 层特例）；之后每层先用 `file` 看格式，再按格式挑工具。`gzip` / `bzip2` 只认扩展名（必须叫 `.gz` / `.bz2`），所以要先 `mv` 改名；`tar` 只是打包、不压缩，不用改名。每剥一层立刻再 `file`，让输出决定下一条命令
+- **我卡在哪**：① 第一次 `xxd -r data.txt` 少给输出文件名，还原结果直接喷到屏幕上变成乱码；② 没看 `file` 的输出就凭记忆选工具，拿 gzip 的文件去 `bzip2 -d`，报 `not a bzip2 file`；③ 以为 `&&` 失败就不会改名——其实 `mv` 一执行名字就变了，`&&` 只管后一条要不要执行；④ `tar -xf` 少给文件名，后来又写成 `tar data5.bin`，被老式语法当成选项字母串，报 `Old option 'b' requires an argument`
 
 ### 13→14
 
-- **命令**：
-- **在干什么**：
-- **我卡在哪**：
+- **命令**：`scp -P 2220 bandit13@bandit.labs.overthewire.org:sshkey.private .` → `icacls sshkey.private /inheritance:r` → `icacls sshkey.private /grant:r "$($env:USERNAME):R"` → `ssh -i sshkey.private bandit14@bandit.labs.overthewire.org -p 2220`
+- **在干什么**：这一关给了一把**私钥**文件，用它代替密码登录——服务器认钥匙不认密码，所以 `-i` 后面写钥匙的路径，进去时不会再问密码。钥匙本来在服务器上，但官方禁止从服务器内部连 localhost 跳到下一关（会报 `Connecting from/to localhost is blocked`），所以要用 `scp` 把钥匙下载到自己电脑，再从自己电脑直连 bandit14
+- **我卡在哪**：① 钥匙文件权限是 `640`，也就是同组的人也能读，`ssh` 认为“太开放”直接拒绝使用，必须收紧成只有自己可读；② 先在服务器上试 `ssh -i key bandit14@localhost`，被服务器策略挡住——这不是命令写错，是环境不让；③ Windows 上没有 `chmod`，对应的是 `icacls`；而且 `"$env:USERNAME:R"` 里的 `$env:USERNAME:R` 会被 PowerShell 整个当成一个变量名，取不到就变成空字符串，必须写成 `"$($env:USERNAME):R"` 才对
 
 ### 14→15
 
-- **命令**：
-- **在干什么**：
-- **我卡在哪**：
+- **命令**：`nc localhost 30000`
+- **在干什么**：`nc`（netcat）是“手动连一个端口”的工具，相当于把键盘直接接到某个网络服务上。连上 30000 端口后，把**当前这一关的密码**贴进去回车，服务器先校验这个密码对不对，对了就把下一关的密码返回给你
+- **我卡在哪**：① 第一次贴的是错密码，返回 `Wrong! Please enter the correct current password.`——说明这个服务会先验证身份，验不过就不发下一关的密码；② `nc` 连上之后屏幕上什么提示都没有，看着像卡死了，其实是在等你输入，直接粘贴密码回车就行
 
 ---
 
@@ -126,11 +126,11 @@ https://overthewire.org/wargames/bandit/bandit{下一关数字}.html
 
 | `file` 的输出 | 用什么解开 | 为什么要这么写 |
 | --- | --- | --- |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| `ASCII text` | 不用解，`cat` 直接看 | 到底了 |
+| `gzip compressed data` | `gzip -d` | 文件必须叫 `.gz`，否则 gzip 不认 |
+| `bzip2 compressed data` | `bzip2 -d` | 文件必须叫 `.bz2` |
+| `POSIX tar archive` | `tar -xf` | 只是打包不压缩，不用改名 |
+| 十六进制转储文本（`00000000: 1f8b ...`） | `xxd -r 输入 输出` | 第 0 层专用，**必须给输出文件名**，否则结果直接打到屏幕 |
 
 ---
 
@@ -142,15 +142,21 @@ https://overthewire.org/wargames/bandit/bandit{下一关数字}.html
 | `cat` | 把文件内容打印到屏幕 | 1–4 |
 | `cd` | 切换目录（只能进目录，不能进文件） | 4–6 |
 | `file` | 判断文件是文本还是二进制 | 4 |
-| `find` | 按名字/大小/所有者搜文件 | 5–6 |
+| `find` | 按名字/大小/所有者搜文件 | 5–7 |
 | `grep` | 按内容筛选行 | 7、9 |
 | `sort` / `uniq -u` | 排序 / 只留出现一次的行 | 8 |
 | `strings` | 从二进制里捞出可读文本 | 9 |
 | `2>/dev/null` | 把报错丢进黑洞 | 6 |
 | `\|` | 管道，把左边输出喂给右边 | 8–9 |
+| `xxd -r 输入 输出` | 把十六进制转储还原成二进制 | 12 |
+| `scp -P 端口` | 跨机器复制文件（**大写** `-P` 才是端口） | 13 |
+| `ssh -i 钥匙` | 用私钥代替密码登录 | 13 |
+| `chmod 600` / `icacls` | 把权限收紧到只有自己能读（Linux / Windows） | 13 |
+| `nc 主机 端口` | 手动连一个端口，用键盘收发文本 | 14 |
 
 ---
 
 ## 下一步
 
-- Bandit 10→15：`base64`、`tr`、`xxd` 解压链、SSH 私钥、`nc`
+- Bandit **0→15 已全部打通**（16 关），这份笔记到此收尾
+- 往下可以接着走 Bandit 16+，或者转去 Web 方向（PortSwigger Web Security Academy）
